@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BDR Scorecard · Enable</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  /* Enable Primary Palette */
+  --core-green:#00684A;
+  --mid-green:#00A74C;
+  --lumi-green:#00F752;
+  --mid-teal:#15BB7F;
+  --impact-blue:#00B8D7;
+  --slate-800:#1F2A30;
+  --white:#FFFFFF;
+
+  /* Enable Neutral Palette */
+  --slate-50:#F8FAFB;
+  --slate-100:#F1F4F6;
+  --slate-200:#E4E9EC;
+  --slate-300:#CED7DC;
+  --slate-400:#95A5AC;
+  --slate-500:#64757E;
+  --slate-600:#475761;
+  --slate-700:#364349;
+  --slate-900:#0C1318;
+
+  /* Enable Secondary Palette */
+  --amber:#FFB84D;
+  --coral:#FF6B6B;
+  --violet:#8B5CF6;
+  --sapphire:#2563EB;
+  --magenta:#FF3E9D;
+
+  /* UI Mappings (light theme, Enable brand) */
+  --bg: var(--slate-50);
+  --bg2: var(--white);
+  --bg3: var(--slate-100);
+  --bg4: var(--slate-200);
+  --border: var(--slate-200);
+  --border2: var(--slate-300);
+  --text: var(--slate-800);
+  --text2: var(--slate-600);
+  --text3: var(--slate-400);
+
+  /* Accent = Mid Green (brand primary) */
+  --accent: var(--mid-green);
+  --accent2: var(--core-green);
+  --accent-dim: rgba(0,167,76,0.08);
+  --accent-border: rgba(0,167,76,0.25);
+
+  --blue: var(--impact-blue);
+  --blue-dim: rgba(0,184,215,0.1);
+  --amber-dim: rgba(255,184,77,0.12);
+  --red: var(--coral);
+  --red-dim: rgba(255,107,107,0.1);
+  --purple: var(--violet);
+  --teal: var(--mid-teal);
+
+  --radius: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --shadow-sm: 0 1px 3px rgba(31,42,48,0.06), 0 1px 2px rgba(31,42,48,0.04);
+  --shadow: 0 4px 12px rgba(31,42,48,0.08), 0 1px 3px rgba(31,42,48,0.04);
+  --shadow-lg: 0 8px 24px rgba(31,42,48,0.1), 0 2px 6px rgba(31,42,48,0.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',Arial,sans-serif;font-size:14px}
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:var(--slate-100)}
+::-webkit-scrollbar-thumb{background:var(--slate-300);border-radius:2px}
+
+.app{display:flex;height:100vh;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:220px;flex-shrink:0;
+  background:var(--slate-800);
+  display:flex;flex-direction:column;
+  position:relative;overflow:hidden;
+}
+/* Subtle three-tiered flow decoration in sidebar */
+.sidebar::before{
+  content:'';position:absolute;bottom:60px;left:-10px;right:-10px;height:80px;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0, transparent 6px,
+    rgba(0,247,82,0.06) 6px, rgba(0,247,82,0.06) 10px,
+    transparent 10px, transparent 14px,
+    rgba(0,247,82,0.04) 14px, rgba(0,247,82,0.04) 18px,
+    transparent 18px, transparent 22px,
+    rgba(0,247,82,0.03) 22px, rgba(0,247,82,0.03) 26px
+  );
+  pointer-events:none;
+}
+.sidebar-logo{
+  padding:24px 20px 20px;
+  border-bottom:1px solid rgba(255,255,255,0.07);
+  display:flex;align-items:center;gap:10px;
+}
+.logo-icon{
+  width:32px;height:32px;border-radius:7px;
+  background:linear-gradient(135deg, var(--mid-green), var(--lumi-green));
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;
+  flex-shrink:0;padding:7px 6px;
+}
+.logo-bar{height:3px;border-radius:2px;background:var(--slate-800)}
+.logo-bar:nth-child(1){width:100%}
+.logo-bar:nth-child(2){width:65%;align-self:flex-start}
+.logo-bar:nth-child(3){width:80%}
+.logo-text{display:flex;flex-direction:column}
+.logo-wordmark{font-size:15px;font-weight:800;color:#fff;line-height:1;letter-spacing:-0.02em}
+.logo-sub{font-size:10px;color:rgba(255,255,255,0.4);font-weight:500;margin-top:2px;letter-spacing:0.04em;text-transform:uppercase}
+.sidebar-nav{flex:1;padding:12px 0;overflow-y:auto}
+.nav-section{
+  padding:4px 16px;
+  font-size:9px;font-weight:700;color:rgba(255,255,255,0.25);
+  letter-spacing:.12em;text-transform:uppercase;margin-top:12px;margin-bottom:4px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 16px;cursor:pointer;
+  color:rgba(255,255,255,0.5);
+  transition:all .15s;border-radius:0;
+  font-size:13px;font-weight:600;
+  margin:1px 8px;border-radius:var(--radius);
+  position:relative;
+}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+.nav-item:hover{color:rgba(255,255,255,0.85);background:rgba(255,255,255,0.07)}
+.nav-item.active{
+  color:#fff;
+  background:linear-gradient(135deg,rgba(0,167,76,0.3),rgba(21,187,127,0.2));
+  border:1px solid rgba(0,247,82,0.2);
+}
+.nav-item.active::before{
+  content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:3px;height:16px;border-radius:2px;
+  background:linear-gradient(to bottom, var(--lumi-green), var(--mid-teal));
+}
+
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0;background:var(--slate-50)}
+.topbar{
+  padding:18px 32px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+  background:var(--white);
+  box-shadow:var(--shadow-sm);
+}
+.topbar h2{font-size:19px;font-weight:800;color:var(--slate-800);letter-spacing:-0.02em}
+.topbar .sub{font-size:11px;color:var(--text3);margin-top:2px;font-weight:500}
+.content{padding:24px 32px;flex:1}
+.page{display:none}.page.active{display:block}
+
+/* ── METRIC CARDS ── */
+.metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+.metric-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:16px 18px;
+  box-shadow:var(--shadow-sm);
+  position:relative;overflow:hidden;
+}
+.metric-card::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg, var(--mid-green), var(--mid-teal));
+  opacity:0;transition:opacity .2s;
+}
+.metric-card:hover::after{opacity:1}
+.metric-card .label{
+  font-size:10px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;
+}
+.metric-card .value{font-size:26px;font-weight:800;line-height:1;color:var(--slate-800);letter-spacing:-0.02em}
+.metric-card .change{font-size:11px;margin-top:6px;color:var(--text3);font-weight:500}
+
+/* ── CARDS ── */
+.card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:20px 22px;margin-bottom:16px;
+  box-shadow:var(--shadow-sm);
+}
+.card-title{
+  font-size:11px;font-weight:700;color:var(--slate-700);margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;
+  text-transform:uppercase;letter-spacing:.07em;
+}
+.card-title .dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* ── SKILL CATEGORIES ── */
+.skill-cat{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px;
+  box-shadow:var(--shadow-sm);
+  transition:border-color .15s;
+}
+.skill-cat:hover{border-color:var(--slate-300)}
+.skill-cat-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;padding-bottom:9px;border-bottom:1px solid var(--border)}
+.cat-icon{
+  width:26px;height:26px;border-radius:var(--radius);
+  display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;
+}
+.cat-label{font-size:12px;font-weight:700;flex:1;color:var(--slate-700)}
+.cat-avg-badge{
+  font-size:11px;font-weight:700;color:var(--slate-600);
+  background:var(--slate-100);padding:2px 8px;border-radius:4px;
+  border:1px solid var(--border);
+}
+.star-row{display:flex;align-items:center;margin-bottom:8px}
+.star-row:last-child{margin-bottom:0}
+.star-name{font-size:12px;color:var(--text2);flex:1;padding-right:10px;line-height:1.35;font-weight:500}
+.stars{display:flex;gap:3px;flex-shrink:0}
+.star{width:19px;height:19px;cursor:pointer;transition:transform .1s;flex-shrink:0}
+.star:hover{transform:scale(1.2)}
+.star svg{width:19px;height:19px;display:block}
+.star-num{font-size:10px;font-weight:700;color:var(--text3);width:14px;text-align:right;flex-shrink:0;margin-left:4px}
+
+/* ── FORMS ── */
+.fgroup{display:flex;flex-direction:column;gap:5px;margin-bottom:13px}
+.fgroup label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em}
+input,select{
+  background:var(--slate-50);border:1px solid var(--border2);
+  border-radius:var(--radius);padding:9px 12px;
+  color:var(--text);font-family:'Plus Jakarta Sans',Arial,sans-serif;
+  font-size:13px;font-weight:500;width:100%;outline:none;transition:border .15s, box-shadow .15s;
+}
+input:focus,select:focus{
+  border-color:var(--mid-green);
+  box-shadow:0 0 0 3px rgba(0,167,76,0.12);
+  background:var(--white);
+}
+select option{background:var(--white)}
+input[type=month]{color-scheme:light}
+input[type=number]::-webkit-inner-spin-button{opacity:0.5}
+
+/* ── BUTTONS ── */
+.btn{
+  padding:9px 18px;border-radius:var(--radius);
+  font-family:'Plus Jakarta Sans',Arial,sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;
+  transition:all .15s;border:1px solid transparent;letter-spacing:0.01em;
+}
+.btn-primary{
+  background:linear-gradient(135deg, var(--mid-green), var(--core-green));
+  color:#fff;border-color:var(--core-green);
+  box-shadow:0 2px 8px rgba(0,167,76,0.3);
+}
+.btn-primary:hover{
+  background:linear-gradient(135deg, var(--lumi-green), var(--mid-green));
+  color:var(--slate-800);box-shadow:0 4px 12px rgba(0,167,76,0.4);
+  transform:translateY(-1px);
+}
+.btn-ghost{
+  background:transparent;color:var(--text2);
+  border-color:var(--border2);
+}
+.btn-ghost:hover{background:var(--slate-100);color:var(--slate-700)}
+.btn-danger{background:transparent;color:var(--coral);border-color:rgba(255,107,107,0.3)}
+.btn-danger:hover{background:var(--red-dim)}
+.btn-sm{padding:5px 11px;font-size:11px}
+.btns{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* ── COMPOSITE BOX ── */
+.comp-box{
+  background:linear-gradient(135deg, var(--slate-800) 0%, var(--slate-700) 100%);
+  border:1px solid var(--slate-700);border-radius:var(--radius-lg);
+  padding:18px 20px;display:flex;justify-content:space-between;align-items:center;
+  margin:14px 0;box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.comp-box::before{
+  content:'';position:absolute;top:-20px;right:-20px;width:100px;height:100px;
+  border-radius:50%;background:radial-gradient(circle, rgba(0,247,82,0.15) 0%, transparent 70%);
+  pointer-events:none;
+}
+.comp-label{font-size:9px;font-weight:700;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.comp-score{font-size:32px;font-weight:800;letter-spacing:-0.03em;color:#fff}
+.comp-sub{font-size:10px;color:rgba(255,255,255,0.35);margin-top:3px;font-weight:500;line-height:1.4}
+
+/* ── CHIPS ── */
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{
+  background:var(--slate-100);border:1px solid var(--border);
+  border-radius:var(--radius);padding:5px 9px;font-size:11px;
+}
+.chip-label{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+.chip-val{font-weight:800;margin-top:1px;font-size:12px}
+
+/* ── TABLES ── */
+.table-wrap{overflow-x:auto;border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow-sm)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{
+  padding:10px 12px;text-align:left;
+  font-size:9px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.09em;
+  border-bottom:1px solid var(--border);white-space:nowrap;
+  background:var(--slate-50);
+}
+td{padding:11px 12px;border-bottom:1px solid var(--border);color:var(--slate-600);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--slate-50);color:var(--slate-800)}
+.empty-row td{text-align:center;color:var(--text3);padding:40px;font-size:12px;font-weight:600}
+
+/* ── BADGES ── */
+.badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;
+  letter-spacing:0.03em;
+}
+.badge-A{background:rgba(0,167,76,0.12);color:var(--core-green);border:1px solid rgba(0,167,76,0.2)}
+.badge-B{background:var(--blue-dim);color:var(--impact-blue);border:1px solid rgba(0,184,215,0.2)}
+.badge-C{background:var(--amber-dim);color:#A96900;border:1px solid rgba(255,184,77,0.2)}
+.badge-D{background:var(--red-dim);color:var(--coral);border:1px solid rgba(255,107,107,0.2)}
+.team-pill{
+  display:inline-block;padding:2px 8px;border-radius:4px;
+  font-size:11px;font-weight:600;
+  background:var(--slate-100);color:var(--slate-600);
+  border:1px solid var(--border);
+}
+.avatar{
+  width:30px;height:30px;border-radius:6px;
+  background:linear-gradient(135deg,var(--mid-green),var(--mid-teal));
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:800;color:#fff;
+  flex-shrink:0;letter-spacing:0.02em;
+}
+.name-cell{display:flex;align-items:center;gap:10px}
+.score-bar{height:3px;background:var(--slate-200);border-radius:2px;overflow:hidden;margin-top:4px;width:60px}
+.score-fill{height:3px;border-radius:2px;transition:width .4s}
+.trend{font-size:11px;font-weight:700}
+.trend.up{color:var(--mid-green)}.trend.down{color:var(--coral)}.trend.flat{color:var(--text3)}
+
+/* ── FILTER TABS ── */
+.filter-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.filter-tab{
+  padding:5px 13px;border-radius:20px;font-size:12px;font-weight:600;
+  cursor:pointer;border:1px solid var(--border2);color:var(--text2);
+  background:var(--white);transition:all .15s;
+}
+.filter-tab:hover{color:var(--slate-700);border-color:var(--slate-400)}
+.filter-tab.active{
+  background:var(--accent-dim);
+  border-color:var(--accent-border);
+  color:var(--core-green);
+}
+
+/* ── ANALYTICS ── */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+.chart-card{
+  background:var(--white);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:20px 22px;
+  box-shadow:var(--shadow-sm);
+}
+.chart-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--slate-500);margin-bottom:14px}
+.bdr-row{display:grid;grid-template-columns:160px 1fr;gap:8px;align-items:center;margin-bottom:8px}
+.bar-track{background:var(--slate-100);border-radius:3px;height:6px;overflow:hidden;flex:1}
+.bar-fill{height:6px;border-radius:3px;transition:width .4s}
+.heatmap-row{display:flex;align-items:center;gap:5px;margin-bottom:3px}
+.heatmap-cells{display:flex;gap:3px;flex:1}
+.heatmap-cell{flex:1;min-width:28px;height:22px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;cursor:default}
+.heatmap-cell:hover{filter:brightness(0.95)}
+.setup-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 0;border-bottom:1px solid var(--border);
+  font-size:13px;color:var(--slate-600);font-weight:500;
+}
+.setup-item:last-child{border-bottom:none}
+.score-msg{font-size:12px;font-weight:600;padding:8px 0;min-height:28px}
+
+/* ── PAGE HEADER ACCENT ── */
+.page-header-accent{
+  display:flex;align-items:center;gap:10px;
+}
+.page-header-flow{
+  display:flex;flex-direction:column;gap:2px;padding:5px 0;
+}
+.phf-bar{height:3px;border-radius:2px;background:linear-gradient(90deg,var(--mid-green),var(--mid-teal))}
+.phf-bar:nth-child(1){width:28px}
+.phf-bar:nth-child(2){width:18px}
+.phf-bar:nth-child(3){width:22px}
+</style>
+</head>
+<body>
+
+<!-- CONFIG SCREEN -->
+<div id="config-screen" style="display:none;position:fixed;inset:0;background:var(--slate-50);z-index:1000;align-items:center;justify-content:center;flex-direction:column;">
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:40px 44px;width:100%;max-width:480px;box-shadow:var(--shadow-lg);">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
+      <div class="logo-icon" style="width:40px;height:40px;border-radius:9px;">
+        <div class="logo-bar"></div><div class="logo-bar"></div><div class="logo-bar"></div>
+      </div>
+      <div>
+        <div style="font-size:18px;font-weight:800;color:var(--slate-800);letter-spacing:-0.02em">Enable BDR Scorecard</div>
+        <div style="font-size:12px;color:var(--slate-400);font-weight:500;margin-top:2px">Connect your Supabase database</div>
+      </div>
+    </div>
+    <div class="fgroup">
+      <label>Supabase Project URL</label>
+      <input id="cfg-url" placeholder="https://xxxxxxxxxxxx.supabase.co" style="font-family:monospace;font-size:12px;">
+    </div>
+    <div class="fgroup">
+      <label>Supabase Anon Key</label>
+      <input id="cfg-key" placeholder="eyJhbGci..." style="font-family:monospace;font-size:12px;">
+    </div>
+    <div id="config-error" style="color:#CF3F44;font-size:12px;font-weight:600;min-height:20px;margin-bottom:12px;"></div>
+    <button id="cfg-connect-btn" class="btn btn-primary" style="width:100%;padding:12px;" onclick="connectSupabase()">Connect to Supabase</button>
+    <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+      <div style="font-size:11px;font-weight:700;color:var(--slate-500);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">First time? Run this SQL in Supabase → SQL Editor</div>
+      <pre id="sql-block" style="background:var(--slate-800);color:#00F752;font-size:10px;padding:14px;border-radius:8px;overflow-x:auto;line-height:1.6;cursor:pointer;" title="Click to copy" onclick="copySql()">create table teams (name text primary key);
+create table bdrs (id text primary key, name text not null, team text references teams(name));
+create table scores (
+  id text primary key,
+  bdr_id text references bdrs(id),
+  month text not null,
+  skill_cats jsonb, skill_avg5 numeric, skill_pct int,
+  eff_cats jsonb, eff_avg5 numeric, eff_pct int,
+  composite int,
+  unique(bdr_id, month)
+);
+alter table teams enable row level security;
+alter table bdrs enable row level security;
+alter table scores enable row level security;
+create policy "public read" on teams for select using (true);
+create policy "public write" on teams for all using (true);
+create policy "public read" on bdrs for select using (true);
+create policy "public write" on bdrs for all using (true);
+create policy "public read" on scores for select using (true);
+create policy "public write" on scores for all using (true);</pre>
+      <div id="sql-copied" style="font-size:11px;color:var(--mid-green);font-weight:600;min-height:16px;margin-top:6px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay" style="display:none;position:fixed;inset:0;background:rgba(248,250,251,0.85);z-index:999;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+  <div style="width:36px;height:36px;border:3px solid var(--slate-200);border-top-color:var(--mid-green);border-radius:50%;animation:spin .7s linear infinite;"></div>
+  <div style="font-size:13px;font-weight:600;color:var(--slate-500)">Loading data…</div>
+</div>
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
+<!-- APP -->
+<div id="app-screen" style="display:none;height:100vh;width:100%;">
+<div class="app">
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-icon">
+      <div class="logo-bar"></div>
+      <div class="logo-bar"></div>
+      <div class="logo-bar"></div>
+    </div>
+    <div class="logo-text">
+      <div class="logo-wordmark">Enable</div>
+      <div class="logo-sub">BDR Scorecard</div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Scoring</div>
+    <div class="nav-item active" onclick="showPage('score',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Score BDR
+    </div>
+    <div class="nav-item" onclick="showPage('leaderboard',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Leaderboard
+    </div>
+    <div class="nav-section">Analytics</div>
+    <div class="nav-item" onclick="showPage('analytics',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      Analytics
+    </div>
+    <div class="nav-item" onclick="showPage('history',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      History
+    </div>
+    <div class="nav-section">Config</div>
+    <div class="nav-item" onclick="showPage('setup',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M20 12h2M2 12h2"/></svg>
+      Setup
+    </div>
+    <div style="padding:12px 8px 0;">
+      <button onclick="refreshData()" style="width:100%;padding:8px;background:rgba(0,247,82,0.1);border:1px solid rgba(0,247,82,0.2);border-radius:var(--radius);color:#00F752;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:'Plus Jakarta Sans',sans-serif;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Refresh data
+      </button>
+    </div>
+  </nav>
+</aside>
+
+<main class="main">
+
+  <!-- SCORE PAGE -->
+  <div id="page-score" class="page active">
+    <div class="topbar">
+      <div class="page-header-accent">
+        <div class="page-header-flow"><div class="phf-bar"></div><div class="phf-bar"></div><div class="phf-bar"></div></div>
+        <div><h2>Score a BDR</h2><div class="sub">Skill = 1–5 stars · Efficiency = enter actual values, auto-scored 1–5</div></div>
+      </div>
+      <div id="topbar-date" style="font-size:12px;font-weight:600;color:var(--text3)"></div>
+    </div>
+    <div class="content">
+      <div class="metrics-row" id="score-metrics"></div>
+      <div class="grid2">
+        <div>
+          <div class="card">
+            <div class="card-title"><span class="dot" style="background:var(--accent)"></span>Entry details</div>
+            <div class="fgroup"><label>BDR</label>
+              <select id="s-bdr" onchange="updateComposite()"><option value="">Select BDR...</option></select>
+            </div>
+            <div class="fgroup"><label>Month</label><input type="month" id="s-month"></div>
+            <div class="comp-box">
+              <div>
+                <div class="comp-label">Composite score</div>
+                <div id="comp-score" class="comp-score">—</div>
+                <div id="comp-sub" class="comp-sub"></div>
+              </div>
+              <div style="text-align:right">
+                <div class="comp-label">Grade</div>
+                <div id="comp-grade" style="font-size:28px;font-weight:700;margin-top:4px">—</div>
+              </div>
+            </div>
+            <div id="cat-chips" class="chips"></div>
+            <div class="btns" style="margin-top:16px">
+              <button class="btn btn-primary" onclick="saveScore()">Save score</button>
+              <button class="btn btn-ghost" onclick="clearForm()">Clear</button>
+            </div>
+            <div id="score-msg" class="score-msg"></div>
+          </div>
+          <div class="card" id="eff-card">
+            <div class="card-title"><span class="dot" style="background:var(--blue)"></span>Efficiency metrics
+              <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;color:var(--text3);margin-left:auto">enter actual value → auto-scored 1–5</span>
+            </div>
+            <div id="eff-inputs"></div>
+          </div>
+        </div>
+        <div id="skill-cats-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD PAGE -->
+  <div id="page-leaderboard" class="page">
+    <div class="topbar">
+      <div class="page-header-accent">
+        <div class="page-header-flow"><div class="phf-bar"></div><div class="phf-bar"></div><div class="phf-bar"></div></div>
+        <div><h2>Leaderboard</h2><div class="sub" id="lb-sub">Monthly rankings</div></div>
+      </div>
+      <input type="month" id="lb-month" onchange="renderLeaderboard()" style="width:160px">
+    </div>
+    <div class="content">
+      <div id="lb-filters" class="filter-tabs"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>#</th><th>BDR</th><th>Team</th>
+            <th title="Prospecting Quality">Prospect.</th>
+            <th title="Discovery">Discovery</th>
+            <th title="Tools Mastery">Tools</th>
+            <th title="Professionalism & Coachability">Prof.</th>
+            <th>Skill ★</th><th title="Activity avg score">Activity</th><th title="Conversions avg score">Conversions</th><th>Eff ★</th><th>Composite</th><th>Grade</th><th>vs prev</th>
+          </tr></thead>
+          <tbody id="lb-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ANALYTICS PAGE -->
+  <div id="page-analytics" class="page">
+    <div class="topbar">
+      <div class="page-header-accent">
+        <div class="page-header-flow"><div class="phf-bar"></div><div class="phf-bar"></div><div class="phf-bar"></div></div>
+        <div><h2>Analytics</h2><div class="sub">Team &amp; BDR performance insights</div></div>
+      </div><select id="an-period" onchange="renderAnalytics()" style="width:160px">
+        <option value="3">Last 3 months</option>
+        <option value="6" selected>Last 6 months</option>
+        <option value="12">Last 12 months</option>
+        <option value="all">All time</option>
+      </select>
+    </div>
+    <div class="content">
+      <div class="metrics-row" id="an-metrics"></div>
+      <div class="analytics-grid">
+        <div class="chart-card">
+          <div class="chart-title">Team composite — trend</div>
+          <div style="position:relative;height:220px"><canvas id="ch-trend"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Skill categories by team (★ avg)</div>
+          <div style="position:relative;height:220px"><canvas id="ch-cats"></canvas></div>
+        </div>
+      </div>
+      <div class="analytics-grid">
+        <div class="chart-card">
+          <div class="chart-title">BDR composite rankings</div>
+          <div id="bdr-bars"></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Grade distribution</div>
+          <div style="position:relative;height:220px"><canvas id="ch-grades"></canvas></div>
+        </div>
+      </div>
+      <div class="chart-card" style="margin-bottom:18px">
+        <div class="chart-title">Sub-metric heatmap — avg ★ per BDR</div>
+        <div id="heatmap" style="overflow-x:auto"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY PAGE -->
+  <div id="page-history" class="page">
+    <div class="topbar"><div class="page-header-accent"><div class="page-header-flow"><div class="phf-bar"></div><div class="phf-bar"></div><div class="phf-bar"></div></div><div><h2>History</h2><div class="sub">Full score log</div></div></div></div>
+    <div class="content">
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px">
+        <div class="fgroup" style="margin:0;flex:1;min-width:120px"><label>BDR</label>
+          <select id="h-bdr" onchange="renderHistory()"><option value="">All BDRs</option></select></div>
+        <div class="fgroup" style="margin:0;flex:1;min-width:120px"><label>Team</label>
+          <select id="h-team" onchange="renderHistory()"><option value="">All teams</option></select></div>
+        <div class="fgroup" style="margin:0;flex:1;min-width:120px"><label>Month</label>
+          <input type="month" id="h-month" onchange="renderHistory()"></div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Month</th><th>BDR</th><th>Team</th>
+            <th>Prospect.</th><th>Discovery</th><th>Tools</th><th>Prof.</th>
+            <th>Skill ★</th><th>Activity</th><th>Conversions</th><th>Eff ★</th><th>Composite</th><th>Grade</th><th></th>
+          </tr></thead>
+          <tbody id="hist-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETUP PAGE -->
+  <div id="page-setup" class="page">
+    <div class="topbar">
+      <div class="page-header-accent"><div class="page-header-flow"><div class="phf-bar"></div><div class="phf-bar"></div><div class="phf-bar"></div></div><div><h2>Setup</h2><div class="sub">Teams, BDRs and efficiency metrics</div></div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="exportData()">Export JSON</button>
+        <button class="btn btn-ghost btn-sm" onclick="showConfigScreen()">Change DB connection</button>
+        <button class="btn btn-danger btn-sm" onclick="confirmReset()">Reset all</button>
+      </div>
+    </div>
+    <div class="content">
+      <div class="grid2">
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background:var(--amber)"></span>Teams</div>
+          <div id="teams-list" style="margin-bottom:14px"></div>
+          <div class="fgroup"><label>New team</label><input id="new-team" placeholder="e.g. APAC" onkeydown="if(event.key==='Enter')addTeam()"></div>
+          <button class="btn btn-primary btn-sm" onclick="addTeam()">+ Add</button>
+        </div>
+        <div class="card">
+          <div class="card-title"><span class="dot" style="background:var(--red)"></span>BDRs</div>
+          <div id="bdrs-list" style="margin-bottom:14px"></div>
+          <div class="fgroup"><label>Name</label><input id="new-bdr-name" placeholder="Full name"></div>
+          <div class="fgroup"><label>Team</label><select id="new-bdr-team"><option value="">Select team...</option></select></div>
+          <button class="btn btn-primary btn-sm" onclick="addBDR()">+ Add BDR</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:var(--blue)"></span>Efficiency categories <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text3);margin-left:4px">(fixed — enter actual values when scoring)</span></div>
+        <div id="eff-cat-preview"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot" style="background:var(--accent)"></span>Skill categories <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;color:var(--text3);margin-left:4px">(fixed — 1–5 stars)</span></div>
+        <div id="cat-preview"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div><!-- /.app -->
+</div><!-- /#app-screen -->
+
+<script>
+function copySql(){
+  const sql=document.getElementById('sql-block').textContent;
+  navigator.clipboard.writeText(sql).then(()=>{
+    document.getElementById('sql-copied').textContent='Copied!';
+    setTimeout(()=>document.getElementById('sql-copied').textContent='',2000);
+  }).catch(()=>{
+    document.getElementById('sql-copied').textContent='Select all and copy manually';
+  });
+}
+</script>
+<script>
+// ── SKILL CATEGORIES (fixed structure) ──────────────────────────────────────
+const CATS = [
+  { id:'prospecting', name:'Prospecting Quality', icon:'🎯', color:'#00A74C',
+    metrics:['Account Research','Multi-threading','Messaging & Communication','Objection Handling','Personalisation'] },
+  { id:'discovery', name:'Discovery', icon:'🔍', color:'#00B8D7',
+    metrics:['Ability to identify L2 pain','CoM usage & Competency','Product Knowledge'] },
+  { id:'tools', name:'Tools Mastery', icon:'🛠️', color:'#8B5CF6',
+    metrics:['SFDC Hygiene','Clari/Groove competency','Zoominfo competency','Salesnav competency','AI usage & competency'] },
+  { id:'professionalism', name:'Professionalism & Coachability', icon:'🌟', color:'#15BB7F',
+    metrics:['Receptive to feedback','Implements changes quickly','Positive mindset','Time management'] }
+];
+
+// ── EFFICIENCY CATEGORIES (fixed, value-based auto-scoring 1–5) ─────────────
+const EFF_CATS = [
+  {
+    id:'activity', name:'Activity', icon:'📞', color:'#00B8D7',
+    metrics:[
+      { id:'calls_per_day', label:'Avg calls per day', unit:'calls', placeholder:'e.g. 45',
+        hint:'Expectation: 50 = score 3',
+        score: v => v>=70?5:v>=60?4:v>=50?3:v>=35?2:1 },
+      { id:'connected_call_pct', label:'Connected call %', unit:'%', placeholder:'e.g. 5.5',
+        hint:'<3%=1 · 3–4.9%=2 · 5–6.9%=3 · 7–8.9%=4 · >9%=5',
+        score: v => v>=9?5:v>=7?4:v>=5?3:v>=3?2:1 },
+      { id:'on_time_flow', label:'On-time flow steps', unit:'%', placeholder:'e.g. 88',
+        hint:'<70%=1 · 70–79%=2 · 80–89%=3 · 90–99%=4 · 100%=5',
+        score: v => v>=100?5:v>=90?4:v>=80?3:v>=70?2:1 },
+      { id:'skipped_flow', label:'Skipped flow steps', unit:'%', placeholder:'e.g. 2.5',
+        hint:'>5%=1 · 3–5%=2 · 2–2.9%=3 · 1.1–1.9%=4 · ≤1%=5',
+        score: v => v<=1?5:v<=1.9?4:v<=2.9?3:v<=5?2:1 },
+    ]
+  },
+  {
+    id:'conversions', name:'Conversions', icon:'🎯', color:'#15BB7F',
+    metrics:[
+      { id:'conversation_pct', label:'Conversation %', unit:'%', placeholder:'e.g. 60',
+        hint:'0–24%=1 · 25–49%=2 · 50–69%=3 · 70–84%=4 · 85–100%=5',
+        score: v => v>=85?5:v>=70?4:v>=50?3:v>=25?2:1 },
+      { id:'conv_to_meeting_pct', label:'Conversation to meeting %', unit:'%', placeholder:'e.g. 18',
+        hint:'<10%=1 · 10–14%=2 · 15–19%=3 · 20–24%=4 · ≥25%=5',
+        score: v => v>=25?5:v>=20?4:v>=15?3:v>=10?2:1 },
+    ]
+  }
+];
+
+// ── SUPABASE CONFIG ──────────────────────────────────────────────────────────
+const CFG_KEY = 'sb_config_v1';
+let SB_URL = '', SB_KEY = '';
+let sb = null; // supabase client
+
+function loadConfig(){
+  try { const c=localStorage.getItem(CFG_KEY); if(c){const p=JSON.parse(c);SB_URL=p.url;SB_KEY=p.key;} } catch(e){}
+}
+function saveConfig(url,key){
+  localStorage.setItem(CFG_KEY,JSON.stringify({url,key}));
+  SB_URL=url; SB_KEY=key;
+}
+
+function initSupabase(){
+  sb = window.supabase.createClient(SB_URL, SB_KEY);
+}
+
+// ── STATE ────────────────────────────────────────────────────────────────────
+let state = { teams:[], bdrs:[], scores:[] };
+const TEAM_COLORS = ['#00A74C','#00B8D7','#8B5CF6','#FFB84D','#FF3E9D','#15BB7F'];
+
+// ── DB OPERATIONS ────────────────────────────────────────────────────────────
+async function dbLoad(){
+  const [t,b,s] = await Promise.all([
+    sb.from('teams').select('*').order('name'),
+    sb.from('bdrs').select('*').order('name'),
+    sb.from('scores').select('*').order('month',{ascending:false})
+  ]);
+  state.teams = (t.data||[]).map(r=>r.name);
+  state.bdrs  = (b.data||[]).map(r=>({id:r.id,name:r.name,team:r.team}));
+  state.scores= (s.data||[]).map(r=>({
+    id:r.id, bdrId:r.bdr_id, month:r.month,
+    skillCats:r.skill_cats, skillAvg5:r.skill_avg5, skillPct:r.skill_pct,
+    effCats:r.eff_cats, effAvg5:r.eff_avg5, effPct:r.eff_pct,
+    composite:r.composite
+  }));
+}
+
+async function dbSaveTeam(name){
+  const {error}=await sb.from('teams').upsert({name},{onConflict:'name'});
+  if(error)throw error;
+}
+async function dbDeleteTeam(name){
+  const {error}=await sb.from('teams').delete().eq('name',name);
+  if(error)throw error;
+}
+async function dbSaveBDR(bdr){
+  const {error}=await sb.from('bdrs').upsert({id:bdr.id,name:bdr.name,team:bdr.team});
+  if(error)throw error;
+}
+async function dbDeleteBDR(id){
+  const {error}=await sb.from('bdrs').delete().eq('id',id);
+  if(error)throw error;
+}
+async function dbSaveScore(entry){
+  const row={
+    id:entry.id, bdr_id:entry.bdrId, month:entry.month,
+    skill_cats:entry.skillCats, skill_avg5:entry.skillAvg5, skill_pct:entry.skillPct,
+    eff_cats:entry.effCats, eff_avg5:entry.effAvg5, eff_pct:entry.effPct,
+    composite:entry.composite
+  };
+  const {error}=await sb.from('scores').upsert(row,{onConflict:'bdr_id,month'});
+  if(error)throw error;
+}
+async function dbDeleteScore(id){
+  const {error}=await sb.from('scores').delete().eq('id',id);
+  if(error)throw error;
+}
+
+// ── UTILS ────────────────────────────────────────────────────────────────────
+const ini = n => n.split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();
+const grade = s => s>=85?'A':s>=70?'B':s>=55?'C':'D';
+const gradeColor = g => g==='A'?'#00A74C':g==='B'?'#00B8D7':g==='C'?'#A96900':'#CF3F44';
+const scoreColor = s => gradeColor(grade(s));
+const starPct = v => Math.round((v/5)*100);
+function prevMonth(m){const d=new Date(m+'-01');d.setMonth(d.getMonth()-1);return d.toISOString().slice(0,7)}
+function mLabel(m){const[y,mo]=m.split('-');return new Date(+y,+mo-1,1).toLocaleString('default',{month:'short',year:'2-digit'})}
+function getMonths(period){
+  if(period==='all')return[...new Set(state.scores.map(s=>s.month))].sort();
+  const n=parseInt(period),now=new Date(),out=[];
+  for(let i=n-1;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);out.push(d.toISOString().slice(0,7))}
+  return out;
+}
+
+// ── NAV ──────────────────────────────────────────────────────────────────────
+function showPage(p,el){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  if(el)el.classList.add('active');
+  if(p==='score')initScore();
+  if(p==='leaderboard')renderLeaderboard();
+  if(p==='analytics')renderAnalytics();
+  if(p==='history')renderHistory();
+  if(p==='setup')renderSetup();
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+async function init(){
+  loadConfig();
+  if(!SB_URL||!SB_KEY){ showConfigScreen(); return; }
+  initSupabase();
+  showAppScreen();
+  setLoading(true);
+  try {
+    await dbLoad();
+  } catch(e) {
+    showConfigScreen('Could not connect — check your URL and key.');
+    return;
+  }
+  setLoading(false);
+  const m=new Date().toISOString().slice(0,7);
+  document.getElementById('s-month').value=m;
+  document.getElementById('lb-month').value=m;
+  document.getElementById('topbar-date').textContent=new Date().toLocaleString('default',{month:'long',year:'numeric'});
+  initScore();
+}
+
+function setLoading(on){
+  document.getElementById('loading-overlay').style.display=on?'flex':'none';
+}
+
+function showConfigScreen(err){
+  document.getElementById('config-screen').style.display='flex';
+  document.getElementById('app-screen').style.display='none';
+  if(err) document.getElementById('config-error').textContent=err;
+  // pre-fill if saved
+  if(SB_URL) document.getElementById('cfg-url').value=SB_URL;
+  if(SB_KEY) document.getElementById('cfg-key').value=SB_KEY;
+}
+
+function showAppScreen(){
+  document.getElementById('config-screen').style.display='none';
+  document.getElementById('app-screen').style.display='flex';
+}
+
+async function connectSupabase(){
+  const url=document.getElementById('cfg-url').value.trim();
+  const key=document.getElementById('cfg-key').value.trim();
+  if(!url||!key){ document.getElementById('config-error').textContent='Please fill in both fields.'; return; }
+  document.getElementById('cfg-connect-btn').textContent='Connecting...';
+  document.getElementById('cfg-connect-btn').disabled=true;
+  saveConfig(url,key);
+  initSupabase();
+  try {
+    await dbLoad();
+    showAppScreen();
+    setLoading(false);
+    const m=new Date().toISOString().slice(0,7);
+    document.getElementById('s-month').value=m;
+    document.getElementById('lb-month').value=m;
+    document.getElementById('topbar-date').textContent=new Date().toLocaleString('default',{month:'long',year:'numeric'});
+    initScore();
+  } catch(e) {
+    document.getElementById('config-error').textContent='Connection failed: '+e.message;
+    document.getElementById('cfg-connect-btn').textContent='Connect';
+    document.getElementById('cfg-connect-btn').disabled=false;
+  }
+}
+
+// ── SCORE PAGE ───────────────────────────────────────────────────────────────
+// star values stored as map: "catId-idx" -> 1..5 (0 = unset)
+let starVals = {};
+
+function initScore(){
+  const sel=document.getElementById('s-bdr');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Select BDR...</option>'+state.bdrs.map(b=>`<option value="${b.id}">${b.name} (${b.team})</option>`).join('');
+  if(cur)sel.value=cur;
+  renderCats();
+  renderEffInputs();
+  renderTopMetrics();
+}
+
+function renderCats(){
+  document.getElementById('skill-cats-container').innerHTML=CATS.map(cat=>`
+    <div class="skill-cat">
+      <div class="skill-cat-header">
+        <div class="cat-icon" style="background:${cat.color}22">${cat.icon}</div>
+        <span class="cat-label" style="color:${cat.color}">${cat.name}</span>
+        <span class="cat-avg-badge" id="cavg-${cat.id}">—★</span>
+      </div>
+      ${cat.metrics.map((m,i)=>starRowHTML(cat,i,m)).join('')}
+    </div>
+  `).join('');
+  // restore saved values
+  Object.entries(starVals).forEach(([key,val])=>{
+    const[catId,idx]=key.split('-');
+    renderStars(catId,+idx,val,val);
+  });
+  updateComposite();
+}
+
+function starRowHTML(cat,idx,name){
+  return`<div class="star-row">
+    <span class="star-name">${name}</span>
+    <div class="stars" id="sr-${cat.id}-${idx}">
+      ${[1,2,3,4,5].map(s=>`
+        <div class="star"
+          onclick="setStar('${cat.id}',${idx},${s})"
+          onmouseover="renderStars('${cat.id}',${idx},${s},${starVals['${cat.id}-${idx}']||0})"
+          onmouseout="renderStars('${cat.id}',${idx},${starVals['${cat.id}-${idx}']||0},${starVals['${cat.id}-${idx}']||0})">
+          <svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="${(starVals[cat.id+'-'+idx]||0)>=s?cat.color:'#E4E9EC'}" stroke="none"/></svg>
+        </div>`).join('')}
+    </div>
+    <span class="star-num" id="sv-${cat.id}-${idx}">${starVals[cat.id+'-'+idx]||0}</span>
+  </div>`;
+}
+
+function renderStars(catId,idx,hover,saved){
+  const cat=CATS.find(c=>c.id===catId);
+  const container=document.getElementById(`sr-${catId}-${idx}`);
+  if(!container)return;
+  container.querySelectorAll('.star').forEach((el,i)=>{
+    el.querySelector('polygon').setAttribute('fill',(i+1)<=hover?cat.color:'#E4E9EC');
+  });
+  const sv=document.getElementById(`sv-${catId}-${idx}`);
+  if(sv)sv.textContent=hover||saved||0;
+}
+
+function setStar(catId,idx,val){
+  starVals[`${catId}-${idx}`]=val;
+  renderStars(catId,idx,val,val);
+  updateComposite();
+}
+
+function catAvg(catId){
+  const cat=CATS.find(c=>c.id===catId);
+  const vals=cat.metrics.map((_,i)=>starVals[`${catId}-${i}`]||0);
+  return vals.reduce((a,b)=>a+b,0)/vals.length;
+}
+
+function updateComposite(){
+  CATS.forEach(cat=>{
+    const avg=catAvg(cat.id);
+    const el=document.getElementById(`cavg-${cat.id}`);
+    if(el)el.textContent=avg.toFixed(1)+'★';
+  });
+  const skillAvg5=CATS.reduce((a,cat)=>a+catAvg(cat.id),0)/CATS.length;
+  const skillPct=Math.round(starPct(skillAvg5));
+  // efficiency: avg of all category avgs (each cat avg is 1-5, convert to 0-100)
+  const effData=getEffScores();
+  const catAvgs=Object.values(effData).map(c=>c.avg).filter(x=>x!==null);
+  const effAvg5=catAvgs.length?catAvgs.reduce((a,b)=>a+b,0)/catAvgs.length:null;
+  const effPct=effAvg5!==null?Math.round(starPct(effAvg5)):null;
+  const comp=effPct!==null?Math.round((skillPct+effPct)/2):skillPct;
+  const g=grade(comp);const gc=gradeColor(g);
+  document.getElementById('comp-score').textContent=comp;
+  document.getElementById('comp-score').style.color=gc;
+  document.getElementById('comp-grade').textContent=g;
+  document.getElementById('comp-grade').style.color=gc;
+  document.getElementById('comp-sub').textContent=`Skill ${skillAvg5.toFixed(2)}★ → ${skillPct}% · Efficiency ${effAvg5!==null?effAvg5.toFixed(2)+'★ → '+effPct+'%':'not entered'}`;
+  document.getElementById('cat-chips').innerHTML=CATS.map(cat=>`
+    <div class="chip">
+      <div class="chip-label">${cat.name.split(' ')[0].slice(0,8)}</div>
+      <div class="chip-val" style="color:${cat.color}">${catAvg(cat.id).toFixed(1)}★</div>
+    </div>`).join('');
+}
+
+function renderEffInputs(){
+  document.getElementById('eff-inputs').innerHTML=EFF_CATS.map(cat=>`
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+        <div style="width:24px;height:24px;border-radius:5px;background:${cat.color}22;display:flex;align-items:center;justify-content:center;font-size:12px">${cat.icon}</div>
+        <span style="font-size:12px;font-weight:700;color:${cat.color}">${cat.name}</span>
+        <span style="font-weight:600;font-size:11px;color:var(--text3);margin-left:auto" id="effcat-avg-${cat.id}">avg —★</span>
+      </div>
+      ${cat.metrics.map(m=>`
+        <div style="margin-bottom:11px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
+            <span style="font-size:12px;color:var(--text2)">${m.label}</span>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-weight:600;font-size:10px;color:var(--text3)">${m.hint}</span>
+              <span style="font-weight:600;font-size:12px;font-weight:700;min-width:20px;text-align:right" id="effscore-${m.id}">—</span>
+              <span style="font-size:11px;color:var(--text3)">★</span>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="number" id="effval-${m.id}" placeholder="${m.placeholder}" min="0" step="0.1"
+              style="flex:1;max-width:120px"
+              oninput="updateEffScore('${cat.id}','${m.id}')">
+            <span style="font-size:12px;color:var(--text3);font-weight:600">${m.unit}</span>
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+  updateComposite();
+}
+
+function updateEffScore(catId, metricId){
+  const cat=EFF_CATS.find(c=>c.id===catId);
+  const m=cat.metrics.find(x=>x.id===metricId);
+  const el=document.getElementById(`effval-${metricId}`);
+  const scoreEl=document.getElementById(`effscore-${metricId}`);
+  if(!el||!scoreEl)return;
+  const raw=el.value.trim();
+  if(raw===''||isNaN(+raw)){scoreEl.textContent='—';scoreEl.style.color='#555860';}
+  else{
+    const s=m.score(+raw);
+    scoreEl.textContent=s;
+    scoreEl.style.color=s>=4?'#c8f060':s===3?'#4d9fff':s===2?'#f0a840':'#f05060';
+  }
+  // update category avg badge
+  const catScores=cat.metrics.map(mx=>{
+    const e=document.getElementById(`effval-${mx.id}`);
+    const v=e&&e.value.trim()!==''&&!isNaN(+e.value)?+e.value:null;
+    return v!==null?mx.score(v):null;
+  }).filter(x=>x!==null);
+  const avgEl=document.getElementById(`effcat-avg-${catId}`);
+  if(avgEl)avgEl.textContent=catScores.length?`avg ${(catScores.reduce((a,b)=>a+b,0)/catScores.length).toFixed(1)}★`:'avg —★';
+  updateComposite();
+}
+
+function getEffScores(){
+  // returns {catId: {metrics:[{id,label,rawVal,score}], avg}, ...}
+  const result={};
+  EFF_CATS.forEach(cat=>{
+    const mets=cat.metrics.map(m=>{
+      const el=document.getElementById(`effval-${m.id}`);
+      const raw=el&&el.value.trim()!==''&&!isNaN(+el.value)?+el.value:null;
+      const s=raw!==null?m.score(raw):null;
+      return{id:m.id,label:m.label,unit:m.unit,rawVal:raw,score:s};
+    });
+    const scored=mets.filter(x=>x.score!==null);
+    result[cat.id]={id:cat.id,name:cat.name,metrics:mets,avg:scored.length?+(scored.reduce((a,b)=>a+b.score,0)/scored.length).toFixed(2):null};
+  });
+  return result;
+}
+
+async function saveScore(){
+  const bdrId=document.getElementById('s-bdr').value;
+  const month=document.getElementById('s-month').value;
+  if(!bdrId||!month){msg('Please select a BDR and month.','#CF3F44');return}
+  const skillCats=CATS.map(cat=>({
+    id:cat.id,name:cat.name,
+    metrics:cat.metrics.map((name,i)=>({name,score:starVals[`${cat.id}-${i}`]||0})),
+    avg:+catAvg(cat.id).toFixed(2)
+  }));
+  const skillAvg5=+(CATS.reduce((a,cat)=>a+catAvg(cat.id),0)/CATS.length).toFixed(2);
+  const skillPct=Math.round(starPct(skillAvg5));
+  const effData=getEffScores();
+  const catAvgs=Object.values(effData).map(c=>c.avg).filter(x=>x!==null);
+  const effAvg5=catAvgs.length?+(catAvgs.reduce((a,b)=>a+b,0)/catAvgs.length).toFixed(2):null;
+  const effPct=effAvg5!==null?Math.round(starPct(effAvg5)):null;
+  const composite=effPct!==null?Math.round((skillPct+effPct)/2):skillPct;
+  const entry={id:'s'+Date.now(),bdrId,month,skillCats,skillAvg5,skillPct,effCats:effData,effAvg5,effPct,composite};
+  msg('Saving…','#95A5AC');
+  try {
+    await dbSaveScore(entry);
+    const idx=state.scores.findIndex(s=>s.bdrId===bdrId&&s.month===month);
+    if(idx>=0)state.scores[idx]=entry;else state.scores.push(entry);
+    renderTopMetrics();
+    msg(`Saved — ${composite}/100  (${grade(composite)})`,'#00A74C');
+  } catch(e) { msg('Error saving: '+e.message,'#CF3F44'); }
+}
+
+function msg(text,color){
+  const el=document.getElementById('score-msg');
+  el.textContent=text;el.style.color=color;
+  setTimeout(()=>el.textContent='',3500);
+}
+
+function clearForm(){
+  document.getElementById('s-bdr').value='';
+  starVals={};
+  renderCats();
+  EFF_CATS.forEach(cat=>cat.metrics.forEach(m=>{
+    const el=document.getElementById(`effval-${m.id}`);if(el)el.value='';
+    const se=document.getElementById(`effscore-${m.id}`);if(se){se.textContent='—';se.style.color='#555860'}
+    const ae=document.getElementById(`effcat-avg-${cat.id}`);if(ae)ae.textContent='avg —★';
+  }));
+  updateComposite();
+}
+
+function renderTopMetrics(){
+  const now=new Date().toISOString().slice(0,7);
+  const tm=state.scores.filter(s=>s.month===now);
+  const all=state.scores;
+  const avg=all.length?Math.round(all.reduce((a,b)=>a+b.composite,0)/all.length):null;
+  const best=all.length?state.bdrs.find(b=>b.id===[...all].sort((a,b)=>b.composite-a.composite)[0]?.bdrId):null;
+  document.getElementById('score-metrics').innerHTML=`
+    <div class="metric-card"><div class="label">BDRs</div><div class="value">${state.bdrs.length}</div><div class="change">${state.teams.length} teams</div></div>
+    <div class="metric-card"><div class="label">Scored this month</div><div class="value">${tm.length}</div><div class="change">of ${state.bdrs.length}</div></div>
+    <div class="metric-card"><div class="label">Avg composite</div><div class="value" style="color:${avg?scoreColor(avg):'#95A5AC'}">${avg??'—'}</div><div class="change">all time</div></div>
+    <div class="metric-card"><div class="label">Top performer</div><div class="value" style="font-size:15px">${best?best.name:'—'}</div><div class="change">${best?best.team:''}</div></div>`;
+}
+
+// ── LEADERBOARD ──────────────────────────────────────────────────────────────
+let lbFilter='';
+function renderLeaderboard(){
+  const month=document.getElementById('lb-month').value;
+  document.getElementById('lb-filters').innerHTML=['',...state.teams].map(t=>
+    `<button class="filter-tab${lbFilter===t?' active':''}" onclick="lbFilter='${t}';renderLeaderboard()">
+      ${t===''?'All teams':t}</button>`).join('');
+  let bdrs=lbFilter?state.bdrs.filter(b=>b.team===lbFilter):state.bdrs;
+  const rows=bdrs.map(b=>{
+    const sc=state.scores.find(s=>s.bdrId===b.id&&s.month===month);
+    if(!sc)return null;
+    const prev=state.scores.find(s=>s.bdrId===b.id&&s.month===prevMonth(month));
+    return{b,sc,diff:prev?sc.composite-prev.composite:null};
+  }).filter(Boolean).sort((a,b)=>b.sc.composite-a.sc.composite);
+  const tbody=document.getElementById('lb-body');
+  if(!rows.length){tbody.innerHTML=`<tr class="empty-row"><td colspan="12">No scores for this period</td></tr>`;return}
+  tbody.innerHTML=rows.map((r,i)=>{
+    const g=grade(r.sc.composite),gc=gradeColor(g);
+    const rank=i===0?'🥇':i===1?'🥈':i===2?'🥉':`<span style="font-weight:600;color:#95A5AC">${i+1}</span>`;
+    const diff=r.diff===null?'<span class="trend flat">—</span>':r.diff>0?`<span class="trend up">▲+${r.diff}</span>`:r.diff<0?`<span class="trend down">▼${r.diff}</span>`:'<span class="trend flat">=</span>';
+    const getCat=id=>(r.sc.skillCats||[]).find(c=>c.id===id);
+    const catTd=id=>{const c=getCat(id);return c?`<td style="font-weight:600;font-size:12px">${c.avg}★</td>`:'<td style="color:#95A5AC">—</td>'};
+    return`<tr>
+      <td style="font-size:15px">${rank}</td>
+      <td><div class="name-cell"><div class="avatar">${ini(r.b.name)}</div>
+        <div><div style="font-weight:600;font-size:13px">${r.b.name}</div>
+          <div class="score-bar"><div class="score-fill" style="width:${r.sc.composite}%;background:${gc}"></div></div>
+        </div></div></td>
+      <td><span class="team-pill">${r.b.team}</span></td>
+      ${catTd('prospecting')}${catTd('discovery')}${catTd('tools')}${catTd('professionalism')}
+      <td style="font-weight:600">${r.sc.skillAvg5}★</td>
+      <td style="font-weight:600;font-size:12px">${r.sc.effCats?.activity?.avg!=null?r.sc.effCats.activity.avg+'★':'—'}</td>
+      <td style="font-weight:600;font-size:12px">${r.sc.effCats?.conversions?.avg!=null?r.sc.effCats.conversions.avg+'★':'—'}</td>
+      <td style="font-weight:600">${r.sc.effAvg5!=null?r.sc.effAvg5+'★':'—'}</td>
+      <td style="font-weight:600;font-weight:700;color:${gc}">${r.sc.composite}</td>
+      <td><span class="badge badge-${g}">${g}</span></td>
+      <td>${diff}</td></tr>`;
+  }).join('');
+  document.getElementById('lb-sub').textContent=`${rows.length} BDR${rows.length!==1?'s':''} scored — ${mLabel(month)}`;
+}
+
+// ── ANALYTICS ────────────────────────────────────────────────────────────────
+let charts={};
+function dc(id){if(charts[id]){charts[id].destroy();delete charts[id]}}
+
+function renderAnalytics(){
+  const period=document.getElementById('an-period').value;
+  const months=getMonths(period);
+  const scores=state.scores.filter(s=>months.includes(s.month));
+  const avgComp=scores.length?Math.round(scores.reduce((a,b)=>a+b.composite,0)/scores.length):null;
+  const avgSk=scores.length?+(scores.reduce((a,b)=>a+(b.skillAvg5||0),0)/scores.length).toFixed(2):null;
+  const effScored=scores.filter(s=>s.effAvg5!=null);
+  const avgEff=effScored.length?+(effScored.reduce((a,b)=>a+(b.effAvg5||0),0)/effScored.length).toFixed(2):null;
+  const topTeam=(()=>{
+    if(!scores.length)return null;
+    const by={};
+    scores.forEach(sc=>{const bdr=state.bdrs.find(b=>b.id===sc.bdrId);if(!bdr)return;
+      if(!by[bdr.team])by[bdr.team]={s:0,n:0};by[bdr.team].s+=sc.composite;by[bdr.team].n++;});
+    return Object.entries(by).sort((a,b)=>(b[1].s/b[1].n)-(a[1].s/a[1].n))[0];
+  })();
+  document.getElementById('an-metrics').innerHTML=`
+    <div class="metric-card"><div class="label">Avg composite</div><div class="value" style="color:${avgComp?scoreColor(avgComp):'#95A5AC'}">${avgComp??'—'}</div><div class="change">out of 100</div></div>
+    <div class="metric-card"><div class="label">Avg skill</div><div class="value">${avgSk??'—'}${avgSk?'★':''}</div><div class="change">out of 5 stars</div></div>
+    <div class="metric-card"><div class="label">Avg efficiency</div><div class="value">${avgEff??'—'}${avgEff?'★':''}</div><div class="change">out of 5 stars</div></div>
+    <div class="metric-card"><div class="label">Top team</div><div class="value" style="font-size:15px">${topTeam?topTeam[0]:'—'}</div><div class="change">${topTeam?Math.round(topTeam[1].s/topTeam[1].n)+' avg':''}</div></div>`;
+
+  // Team trend
+  dc('trend');
+  const ttCtx=document.getElementById('ch-trend').getContext('2d');
+  charts['trend']=new Chart(ttCtx,{type:'line',
+    data:{labels:months.map(mLabel),datasets:state.teams.map((team,ti)=>({
+      label:team,tension:.4,pointRadius:4,spanGaps:true,
+      borderColor:TEAM_COLORS[ti%TEAM_COLORS.length],backgroundColor:'transparent',
+      data:months.map(m=>{
+        const ids=state.bdrs.filter(b=>b.team===team).map(b=>b.id);
+        const sc=scores.filter(s=>s.month===m&&ids.includes(s.bdrId));
+        return sc.length?Math.round(sc.reduce((a,b)=>a+b.composite,0)/sc.length):null;
+      })}))},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#475761',font:{family:'Plus Jakarta Sans',size:11,weight:'600'}}}},
+      scales:{x:{ticks:{color:'#95A5AC',font:{family:'Plus Jakarta Sans',size:10}},grid:{color:'rgba(31,42,48,0.06)'}},
+              y:{min:0,max:100,ticks:{color:'#95A5AC',font:{family:'Plus Jakarta Sans',size:10}},grid:{color:'rgba(31,42,48,0.06)'}}}}});
+
+  // Skill cats by team
+  dc('cats');
+  const catColors=['#00A74C','#00B8D7','#8B5CF6','#15BB7F'];
+  const scCtx=document.getElementById('ch-cats').getContext('2d');
+  charts['cats']=new Chart(scCtx,{type:'bar',
+    data:{labels:state.teams,datasets:CATS.map((cat,ci)=>({
+      label:cat.name.split(' ')[0],borderRadius:4,
+      backgroundColor:catColors[ci]+'bb',
+      data:state.teams.map(team=>{
+        const ids=state.bdrs.filter(b=>b.team===team).map(b=>b.id);
+        const sc=scores.filter(s=>ids.includes(s.bdrId));
+        if(!sc.length)return 0;
+        const avgs=sc.map(s=>(s.skillCats||[]).find(c=>c.id===cat.id)?.avg||0);
+        return+(avgs.reduce((a,b)=>a+b,0)/avgs.length).toFixed(2);
+      })}))},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#475761',font:{family:'Plus Jakarta Sans',size:11,weight:'600'}}}},
+      scales:{x:{ticks:{color:'#95A5AC',font:{family:'Plus Jakarta Sans',size:10}},grid:{color:'rgba(31,42,48,0.06)'}},
+              y:{min:0,max:5,ticks:{color:'#95A5AC',font:{family:'Plus Jakarta Sans',size:10}},grid:{color:'rgba(31,42,48,0.06)'},
+                title:{display:true,text:'avg (1-5)',color:'#95A5AC',font:{family:'Plus Jakarta Sans',size:10}}}}}});
+
+  // BDR bars
+  const bdrAvgs=state.bdrs.map(b=>{
+    const sc=scores.filter(s=>s.bdrId===b.id);
+    const avg=sc.length?Math.round(sc.reduce((a,b)=>a+b.composite,0)/sc.length):null;
+    return{b,avg};
+  }).filter(x=>x.avg!==null).sort((a,b)=>b.avg-a.avg);
+  document.getElementById('bdr-bars').innerHTML=bdrAvgs.map(({b,avg})=>{
+    const g=grade(avg),c=gradeColor(g);
+    return`<div class="bdr-row">
+      <div style="display:flex;align-items:center;gap:7px">
+        <div class="avatar" style="width:24px;height:24px;font-size:10px">${ini(b.name)}</div>
+        <div><div style="font-size:12px;font-weight:600">${b.name}</div>
+          <div style="font-size:10px;color:#95A5AC;font-weight:600">${b.team}</div></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="bar-track"><div class="bar-fill" style="width:${avg}%;background:${c}"></div></div>
+        <span style="font-weight:600;font-size:11px;color:${c};min-width:22px">${avg}</span>
+        <span class="badge badge-${g}">${g}</span>
+      </div></div>`;
+  }).join('')||`<div style="color:#95A5AC;font-size:12px;font-weight:600;padding:1rem 0">No data in this period</div>`;
+
+  // Grade donut
+  dc('grades');
+  const gc={A:0,B:0,C:0,D:0};
+  scores.forEach(s=>gc[grade(s.composite)]++);
+  charts['grades']=new Chart(document.getElementById('ch-grades').getContext('2d'),{type:'doughnut',
+    data:{labels:['A (85+)','B (70–84)','C (55–69)','D (<55)'],
+      datasets:[{data:[gc.A,gc.B,gc.C,gc.D],borderWidth:0,hoverOffset:6,
+        backgroundColor:['rgba(0,167,76,.85)','rgba(0,184,215,.85)','rgba(255,184,77,.85)','rgba(255,107,107,.85)']}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'65%',
+      plugins:{legend:{position:'right',labels:{color:'#475761',font:{family:'Plus Jakarta Sans',size:11,weight:'600'},padding:12}}}}});
+
+  // Heatmap
+  const allSubs=CATS.flatMap(cat=>cat.metrics.map(m=>({cat,m})));
+  const scoredBdrs=state.bdrs.filter(b=>scores.some(s=>s.bdrId===b.id));
+  const hEl=document.getElementById('heatmap');
+  if(!scoredBdrs.length){hEl.innerHTML=`<div style="color:#95A5AC;font-size:12px;font-weight:600;padding:1rem">No data</div>`;return}
+  let html=`<div style="display:flex;align-items:center;gap:4px;margin-bottom:6px">
+    <div style="width:110px;flex-shrink:0"></div>
+    <div style="display:flex;gap:3px;flex:1">
+      ${allSubs.map(({cat,m})=>`<div style="flex:1;min-width:28px;font-size:9px;color:#95A5AC;font-weight:700;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis" title="${cat.name}: ${m}">${m.split(' ')[0].slice(0,5)}</div>`).join('')}
+    </div></div>`;
+  html+=scoredBdrs.map(b=>{
+    const bsc=scores.filter(s=>s.bdrId===b.id);
+    const cells=allSubs.map(({cat,m})=>{
+      const vals=bsc.flatMap(sc=>(sc.skillCats||[]).find(c=>c.id===cat.id)?.metrics.filter(x=>x.name===m).map(x=>x.score)||[]);
+      const avg=vals.length?+(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):null;
+      if(avg===null)return`<div class="heatmap-cell" style="background:#F1F4F6;color:#CED7DC;min-width:28px" title="${m}: no data">—</div>`;
+      const pct=avg/5;
+      const r=parseInt(cat.color.slice(1,3),16),g2=parseInt(cat.color.slice(3,5),16),bl=parseInt(cat.color.slice(5,7),16);
+      const a=(0.12+pct*0.6).toFixed(2);
+      const txtColor=pct>0.5?cat.color:cat.color;
+      return`<div class="heatmap-cell" style="background:rgba(${r},${g2},${bl},${a});color:${cat.color};min-width:28px;font-weight:700" title="${b.name} — ${m}: ${avg}★">${avg}</div>`;
+    }).join('');
+    return`<div class="heatmap-row">
+      <div style="display:flex;align-items:center;gap:5px;width:110px;flex-shrink:0">
+        <div class="avatar" style="width:20px;height:20px;font-size:9px">${ini(b.name)}</div>
+        <span style="font-size:11px;color:#64757E;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.name.split(' ')[0]}</span>
+      </div>
+      <div class="heatmap-cells">${cells}</div></div>`;
+  }).join('');
+  hEl.innerHTML=html;
+}
+
+// ── HISTORY ──────────────────────────────────────────────────────────────────
+function renderHistory(){
+  const bdrF=document.getElementById('h-bdr').value;
+  const teamF=document.getElementById('h-team').value;
+  const monthF=document.getElementById('h-month').value;
+  const bdrSel=document.getElementById('h-bdr');const bc=bdrSel.value;
+  bdrSel.innerHTML='<option value="">All BDRs</option>'+state.bdrs.map(b=>`<option value="${b.id}">${b.name}</option>`).join('');
+  if(bc)bdrSel.value=bc;
+  const teamSel=document.getElementById('h-team');const tc=teamSel.value;
+  teamSel.innerHTML='<option value="">All teams</option>'+state.teams.map(t=>`<option value="${t}">${t}</option>`).join('');
+  if(tc)teamSel.value=tc;
+  let sc=[...state.scores].sort((a,b)=>b.month.localeCompare(a.month));
+  if(bdrF)sc=sc.filter(s=>s.bdrId===bdrF);
+  if(teamF){const ids=state.bdrs.filter(b=>b.team===teamF).map(b=>b.id);sc=sc.filter(s=>ids.includes(s.bdrId))}
+  if(monthF)sc=sc.filter(s=>s.month===monthF);
+  const tbody=document.getElementById('hist-body');
+  if(!sc.length){tbody.innerHTML=`<tr class="empty-row"><td colspan="12">No scores match filters</td></tr>`;return}
+  tbody.innerHTML=sc.map(s=>{
+    const b=state.bdrs.find(x=>x.id===s.bdrId);if(!b)return'';
+    const g=grade(s.composite),gc=gradeColor(g);
+    const gc2=id=>(s.skillCats||[]).find(c=>c.id===id)?.avg??'—';
+    return`<tr>
+      <td style="font-weight:600;font-size:11px;color:#95A5AC">${mLabel(s.month)}</td>
+      <td><div class="name-cell"><div class="avatar" style="width:26px;height:26px;font-size:10px">${ini(b.name)}</div>
+        <span style="font-weight:600">${b.name}</span></div></td>
+      <td><span class="team-pill">${b.team}</span></td>
+      <td style="font-weight:600;font-size:12px">${gc2('prospecting')}★</td>
+      <td style="font-weight:600;font-size:12px">${gc2('discovery')}★</td>
+      <td style="font-weight:600;font-size:12px">${gc2('tools')}★</td>
+      <td style="font-weight:600;font-size:12px">${gc2('professionalism')}★</td>
+      <td style="font-weight:600">${s.skillAvg5}★</td>
+      <td style="font-weight:600;font-size:12px">${s.effCats?.activity?.avg!=null?s.effCats.activity.avg+'★':'—'}</td>
+      <td style="font-weight:600;font-size:12px">${s.effCats?.conversions?.avg!=null?s.effCats.conversions.avg+'★':'—'}</td>
+      <td style="font-weight:600">${s.effAvg5!=null?s.effAvg5+'★':'—'}</td>
+      <td style="font-weight:600;font-weight:700;color:${gc}">${s.composite}</td>
+      <td><span class="badge badge-${g}">${g}</span></td>
+      <td><button class="btn btn-danger btn-sm" onclick="delScore('${s.id}')">×</button></td></tr>`;
+  }).join('');
+}
+
+async function delScore(id){
+  if(!confirm('Delete this score?'))return;
+  try {
+    await dbDeleteScore(id);
+    state.scores=state.scores.filter(s=>s.id!==id);
+    renderHistory();renderTopMetrics();
+  } catch(e) { alert('Error deleting: '+e.message); }
+}
+
+// ── SETUP ────────────────────────────────────────────────────────────────────
+function renderSetup(){
+  document.getElementById('teams-list').innerHTML=state.teams.map((t,i)=>
+    `<div class="setup-item">${t}<button class="btn btn-danger btn-sm" onclick="rmTeam(${i})">×</button></div>`
+  ).join('')||`<div style="color:#95A5AC;font-size:12px;font-weight:600">No teams</div>`;
+  document.getElementById('bdrs-list').innerHTML=state.bdrs.map((b,i)=>
+    `<div class="setup-item"><div class="name-cell">
+      <div class="avatar" style="width:24px;height:24px;font-size:10px">${ini(b.name)}</div>
+      <span style="font-weight:600">${b.name}</span><span class="team-pill" style="margin-left:6px">${b.team}</span>
+    </div><button class="btn btn-danger btn-sm" onclick="rmBDR(${i})">×</button></div>`
+  ).join('')||`<div style="color:#95A5AC;font-size:12px;font-weight:600">No BDRs</div>`;
+  document.getElementById('new-bdr-team').innerHTML='<option value="">Select team...</option>'+state.teams.map(t=>`<option value="${t}">${t}</option>`).join('');
+  document.getElementById('eff-cat-preview').innerHTML=EFF_CATS.map(cat=>`
+    <div style="margin-bottom:10px;padding:12px 14px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
+      <div style="font-size:12px;font-weight:700;color:${cat.color};margin-bottom:8px">${cat.icon} ${cat.name}</div>
+      ${cat.metrics.map(m=>`
+        <div style="margin-bottom:6px;padding:6px 8px;background:var(--bg4);border-radius:5px">
+          <div style="font-size:12px;color:var(--text2);margin-bottom:3px">${m.label} <span style="color:var(--text3);font-size:10px;font-weight:600">(${m.unit})</span></div>
+          <div style="font-size:10px;color:var(--text3);font-weight:600">${m.hint}</div>
+        </div>`).join('')}
+    </div>`).join('');
+  document.getElementById('cat-preview').innerHTML=CATS.map(cat=>`
+    <div style="margin-bottom:10px;padding:12px 14px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)">
+      <div style="font-size:12px;font-weight:700;color:${cat.color};margin-bottom:6px">${cat.icon} ${cat.name}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px">
+        ${cat.metrics.map(m=>`<span style="font-size:11px;font-weight:600;background:var(--bg4);padding:3px 8px;border-radius:4px;color:#64757E">${m}</span>`).join('')}
+      </div></div>`).join('');
+}
+
+async function addTeam(){
+  const v=document.getElementById('new-team').value.trim();
+  if(!v||state.teams.includes(v))return;
+  try { await dbSaveTeam(v); state.teams.push(v); document.getElementById('new-team').value=''; renderSetup();initScore(); }
+  catch(e){alert('Error: '+e.message);}
+}
+async function rmTeam(i){
+  const name=state.teams[i];
+  if(!confirm(`Remove team "${name}"?`))return;
+  try { await dbDeleteTeam(name); state.teams.splice(i,1); renderSetup(); }
+  catch(e){alert('Error: '+e.message);}
+}
+async function addBDR(){
+  const name=document.getElementById('new-bdr-name').value.trim();
+  const team=document.getElementById('new-bdr-team').value;
+  if(!name||!team)return;
+  const bdr={id:'b'+Date.now(),name,team};
+  try { await dbSaveBDR(bdr); state.bdrs.push(bdr); document.getElementById('new-bdr-name').value=''; renderSetup();initScore(); }
+  catch(e){alert('Error: '+e.message);}
+}
+async function rmBDR(i){
+  const bdr=state.bdrs[i];
+  if(!confirm(`Remove ${bdr.name}?`))return;
+  try { await dbDeleteBDR(bdr.id); state.bdrs.splice(i,1); renderSetup();initScore(); }
+  catch(e){alert('Error: '+e.message);}
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='bdr-scorecard.json';a.click();
+}
+
+async function confirmReset(){
+  if(!confirm('Reset ALL data? This will delete everything from the database.'))return;
+  try {
+    await sb.from('scores').delete().neq('id','__none__');
+    await sb.from('bdrs').delete().neq('id','__none__');
+    await sb.from('teams').delete().neq('name','__none__');
+    state={teams:[],bdrs:[],scores:[]};
+    init();renderSetup();
+  } catch(e){alert('Error: '+e.message);}
+}
+
+async function refreshData(){
+  setLoading(true);
+  try { await dbLoad(); } catch(e){alert('Refresh failed: '+e.message);}
+  setLoading(false);
+  initScore();
+  const activePage=document.querySelector('.page.active')?.id?.replace('page-','');
+  if(activePage==='leaderboard')renderLeaderboard();
+  else if(activePage==='analytics')renderAnalytics();
+  else if(activePage==='history')renderHistory();
+  else if(activePage==='setup')renderSetup();
+  else renderTopMetrics();
+}
+
+init();
+</script>
+</body>
+</html>
